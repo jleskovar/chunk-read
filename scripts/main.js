@@ -1,11 +1,11 @@
 (function($) {
     $(function() {
         $('#csvfile').chunked({
-            'maxchunksize': 20000000
-
-        }).done(function(ev) {
-            console.log(this);
-            console.log(ev.target.result);
+            'maxchunksize': 1000000
+        }).done(function(content) {
+            //
+        }).progress(function(perc, read, chunk){
+            $('#progress').text(perc);
         });
     });
 }(jQuery));

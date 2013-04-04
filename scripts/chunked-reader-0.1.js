@@ -15,21 +15,40 @@
         this.change(function(evt) {
 
             var files = evt.target.files,
-                file = files[0];
-
-            var reader = new FileReader();
+                file = files[0],
+                size = file.size,
+                chunk_size = settings.maxchunksize,
+                reader = new FileReader(),
+                chunks = [],
+                offset = 0,
+                bytes = 0;
 
             reader.onerror = function(ex) {
-                dfd.reject(ex);
+                dfd.rejectWith(file, [ex]);
             };
 
-            reader.onload = function(ev) {
-                if (ev.target.readyState == FileReader.DONE) {
-                    dfd.resolveWith(file, [event]);
+            reader.onloadend = function(e) {
+                if (e.target.readyState == FileReader.DONE) {
+                    var chunk = e.target.result;
+                    bytes += chunk.length;
+
+                    chunks.push(chunk);
+
+                    dfd.notifyWith(file, [100.0 * (bytes / size), bytes, chunk]);
+
+                    if (offset < size) {
+                        offset += chunk_size;
+                        var blob = file.slice(offset, offset + chunk_size);
+                        reader.readAsText(blob);
+                    } else {
+                        var content = chunks.join("");
+                        dfd.resolveWith(file, [content]);
+                    }
                 }
             };
 
-            reader.readAsText(file);
+            var blob = file.slice(offset, offset + chunk_size);
+            reader.readAsText(blob);
         });
 
 

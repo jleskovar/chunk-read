@@ -12,7 +12,7 @@
 
         var dfd = $.Deferred();
 
-        this.change(function(evt) {
+        this.on('change', function(evt) {
 
             var files = evt.target.files,
                 file = files[0],
